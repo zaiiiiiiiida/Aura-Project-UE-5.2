@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class AURA_API UAttributeMenuWidgetController : public UAuraWidgetControllerClass
 {
 	GENERATED_BODY()

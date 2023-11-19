@@ -4,14 +4,20 @@
 #include "Player/AuraPlayerController.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AuraGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
 #include "Input/AuraInputComponent.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "Components/SplineComponent.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "Interaction/EnemyInterface.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
 	bReplicates=true;
+	Spline = CreateDefaultSubobject<USplineComponent>("Spline");
+
 }
 
 void AAuraPlayerController::PlayerTick(float DeltaTime)
@@ -66,7 +72,11 @@ void AAuraPlayerController::CursorTrace()
 
 void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
-	//GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Red, *InputTag.ToString());
+	if(InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))
+	{
+		bTargeting = ThisActor ? true : false;
+		bAutoRunning = false;
+	}
 }
 
 void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
@@ -77,8 +87,38 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 {
-	if(GetASC()==nullptr) return;
-	GetASC()->AbilityInputTagHeld(InputTag);
+	if (GetASC())
+	{
+		GetASC()->AbilityInputTagHeld(InputTag);
+	}
+	return;
+	
+	if (bTargeting)
+	{
+		if (GetASC())
+		{
+			GetASC()->AbilityInputTagHeld(InputTag);
+		}
+	}
+	else
+	{
+		APawn* ControlledPawn = GetPawn();
+		if (FollowTime <= ShortPressThreshold && ControlledPawn)
+		{
+			if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination))
+			{
+				Spline->ClearSplinePoints();
+				for (const FVector& PointLoc : NavPath->PathPoints)
+				{
+					Spline->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
+					DrawDebugSphere(GetWorld(), PointLoc, 8.f, 8, FColor::Green, false, 5.f);
+				}
+				bAutoRunning = true;
+			}
+		}
+		FollowTime = 0.f;
+		bTargeting = false;
+	}
 }
 
 UAuraAbilitySystemComponent* AAuraPlayerController::GetASC()

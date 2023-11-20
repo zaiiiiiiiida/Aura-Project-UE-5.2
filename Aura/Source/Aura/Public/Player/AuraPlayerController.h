@@ -40,6 +40,7 @@ private:
 	void CursorTrace();
 	IEnemyInterface* LastActor;
 	IEnemyInterface* ThisActor;
+	FHitResult CursorHit;
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
@@ -61,10 +62,12 @@ private:
 
 
 	UPROPERTY(EditDefaultsOnly)
-	float AutoRunningAcceptanceRadius = 50.f;
+	float AutoRunAcceptanceRadius = 50.f;
 
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent>Spline;
+
+	void AutoRun();
 	
 };

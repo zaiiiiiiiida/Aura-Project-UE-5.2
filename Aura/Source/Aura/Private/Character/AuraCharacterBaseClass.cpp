@@ -14,6 +14,7 @@ AAuraCharacterBaseClass::AAuraCharacterBaseClass()
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
+
 UAbilitySystemComponent* AAuraCharacterBaseClass::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
@@ -22,6 +23,12 @@ UAbilitySystemComponent* AAuraCharacterBaseClass::GetAbilitySystemComponent() co
 void AAuraCharacterBaseClass::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+FVector AAuraCharacterBaseClass::GetCombatSocketLocation()
+{
+	check(Weapon)
+	return Weapon->GetSocketLocation(WeaponTipSocketName);
 }
 
 void AAuraCharacterBaseClass::InitAbilityActorInfo()

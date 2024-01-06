@@ -11,7 +11,9 @@
 #include "UI/Widgets/AuraUserWidget.h"
 #include "Components/WidgetComponent.h"
 #include "AuraGameplayTags.h"
-#include "AuraGameplayTags.h"
+#include "AI/AuraAIController.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "../../../../../../../../../../Program Files/Epic Games/UE_5.2/Engine/Plugins/Importers/USDImporter/Source/ThirdParty/USD/include/pxr/base/tf/warning.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -27,6 +29,15 @@ AAuraEnemy::AAuraEnemy()
 
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");
 	HealthBar->SetupAttachment(GetRootComponent());
+}
+
+void AAuraEnemy::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	if (!HasAuthority()) return;
+	AuraAIController = Cast<AAuraAIController>(NewController);
+	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+	AuraAIController->RunBehaviorTree(BehaviorTree);
 }
 
 void AAuraEnemy::HighlightActor()
